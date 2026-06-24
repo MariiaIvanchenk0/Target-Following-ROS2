@@ -1,0 +1,7 @@
+numpy==2.5.0
+opencv_python==4.13.0.92
+pytest==9.1.1
+setuptools==82.0.1
+sphinx>=7.0.0
+sphinx-rtd-theme>=1.2.0
+myst-parser>=1.0.0

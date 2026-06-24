@@ -1,0 +1,516 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Target-Following Task Documentation &mdash; Target Following ROS2 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8d563738"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Target Following ROS2 Project" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Target Following ROS2
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Robot Deployment</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Target-Following Task Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-add-ros2-packages-in-a-docker-container">How to add ROS2 packages in a Docker container?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-modify-the-start-up-sequence">How to modify the start-up sequence?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pipeline-for-developing-a-vision-based-algorithm-on-yahboom">Pipeline for developing a vision-based algorithm on Yahboom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Target Following ROS2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Target-Following Task Documentation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/target-following-mariia.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="target-following-task-documentation">
+<h1>Target-Following Task Documentation<a class="headerlink" href="#target-following-task-documentation" title="Link to this heading"></a></h1>
+<section id="how-to-add-ros2-packages-in-a-docker-container">
+<h2>How to add ROS2 packages in a Docker container?<a class="headerlink" href="#how-to-add-ros2-packages-in-a-docker-container" title="Link to this heading"></a></h2>
+<p>At first, you should create or download a ROS2 package that you want to add to a Docker container and store it on your local computer.</p>
+<p><strong>Step 1:</strong> Turn on the Yahboom robot and wait until it’s active and ready.</p>
+<ol class="arabic simple">
+<li><p>Plugin the battery, turn on the power switch.</p></li>
+<li><p>To verify:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">ROS_DOMAIN_ID</span><span class="o">=</span><span class="m">32</span>
+ros2<span class="w"> </span>topic<span class="w"> </span>list
+</pre></div>
+</div>
+<p><strong>Step 2:</strong> Transmit the package to the NVIDIA Jetson computer on the Yahboom robot.</p>
+<p>This command uses <strong>SCP (Secure Copy Protocol)</strong> to securely transfer a folder from your local computer to a remote device over a network using SSH.</p>
+<div class="highlight-jsx notranslate"><div class="highlight"><pre><span></span><span class="nx">scp</span><span class="w"> </span><span class="o">-</span><span class="nx">r</span><span class="w"> </span><span class="o">~</span><span class="err">/your_local_ws/src/my_test_pkg jetson@192.168.1.119:~/custom_robot_ws/src/</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><em>your_local_ws</em> - workspace where you currently have your package (danielfirstws_ws)</p></li>
+<li><p><em>my_test_pkg</em> - name of package you want to transmit (hello_world_pkg)</p></li>
+<li><p><em>192.168.1.119</em> - you can check the specific IP address on Yahboom’s screen</p></li>
+<li><p>custom_robot_ws - name of the workspace that will be created on Jetson</p></li>
+</ul>
+<p>To verify:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ssh<span class="w"> </span>jetson@192.168.1.119
+<span class="nb">cd</span><span class="w"> </span>custom_robot_ws/src/
+ls
+</pre></div>
+</div>
+<p><strong>Step 3:</strong> Mount the workspace with your package to a Docker container.</p>
+<ol class="arabic simple">
+<li><p>Modify the Docker bringup script.</p></li>
+</ol>
+<p><em>run_docker_offline.sh</em></p>
+<div class="highlight-jsx notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="nx">v</span><span class="w"> </span><span class="o">/</span><span class="nx">home</span><span class="o">/</span><span class="nx">jetson</span><span class="o">/</span><span class="nx">custom_robot_ws</span><span class="o">:</span><span class="err">/root/custom_robot_ws \</span>
+</pre></div>
+</div>
+<p>Stopped and restarted Docker.</p>
+<div class="highlight-jsx notranslate"><div class="highlight"><pre><span></span><span class="nx">docker</span><span class="w"> </span><span class="nx">stop</span><span class="w"> </span><span class="nx">yahboom_robot</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">docker</span><span class="w"> </span><span class="nx">rm</span><span class="w"> </span><span class="nx">yahboom_robot</span>
+<span class="p">.</span><span class="o">/</span><span class="nx">run_docker_offline</span><span class="p">.</span><span class="nx">sh</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>yahboom_robot<span class="w"> </span>/bin/bash
+ls
+</pre></div>
+</div>
+<p>To build the transmitted package:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>yahboom_robot<span class="w"> </span>/bin/bash
+<span class="nb">cd</span><span class="w"> </span>/root/custom_robot_ws
+rm<span class="w"> </span>-rf<span class="w"> </span>build<span class="w"> </span>install
+colcon<span class="w"> </span>build<span class="w"> </span>--packages-select<span class="w"> </span>controller_package
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;source /root/custom_robot_ws/install/setup.bash&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>/root/.bashrc
+<span class="nb">exit</span>
+</pre></div>
+</div>
+</section>
+<section id="how-to-modify-the-start-up-sequence">
+<h2>How to modify the start-up sequence?<a class="headerlink" href="#how-to-modify-the-start-up-sequence" title="Link to this heading"></a></h2>
+<p>To make your custom-made node run automatically as the robot is powered, you need to modify the starting sequence. As the Yahboom is powered, it connects to a specific network, and a Docker container is created. Container is created with the following script, which mounts directories, sets <em>ROS_DOMAIN_ID,</em> and launches the bring-up program:</p>
+<p><em>run_docker_offline.sh</em></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>-it<span class="w"> </span><span class="se">\</span>
+--name<span class="w"> </span>yahboom_robot<span class="w"> </span><span class="se">\</span>
+--restart<span class="w"> </span>unless-stopped<span class="w"> </span><span class="se">\</span>
+--net<span class="o">=</span>host<span class="w"> </span><span class="se">\</span>
+--privileged<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span>/home:/home<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span>/home/jetson/temp:/root/yahboomcar_ros2_ws/temp<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span>/home/jetson/rosboard:/root/rosboard<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span>/home/jetson/maps:/root/maps<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span>/home/jetson/custom_robot_ws:/root/custom_robot_ws<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span>/dev:/dev<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span>/dev/bus/usb/001/012:/dev/bus/usb/001/012<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span>/dev/bus/usb/001/013:/dev/bus/usb/001/013<span class="w"> </span><span class="se">\</span>
+--device<span class="o">=</span>/dev/myserial<span class="w"> </span><span class="se">\</span>
+--device<span class="o">=</span>/dev/input<span class="w"> </span><span class="se">\</span>
+--device<span class="o">=</span>/dev/astradepth<span class="w"> </span><span class="se">\</span>
+--device<span class="o">=</span>/dev/astrauvc<span class="w"> </span><span class="se">\</span>
+--device<span class="o">=</span>/dev/video0<span class="w"> </span><span class="se">\</span>
+-p<span class="w"> </span><span class="m">9090</span>:9090<span class="w"> </span><span class="se">\</span>
+-p<span class="w"> </span><span class="m">8888</span>:8888<span class="w"> </span>-<span class="se">\</span>
+-e<span class="w"> </span><span class="nv">ROS_DOMAINID</span><span class="o">=</span><span class="m">32</span><span class="w"> </span><span class="se">\</span>
+yahboom_ros_offline1<span class="w"> </span><span class="se">\</span>
+/bin/bash<span class="w"> </span>-i<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;source /root/.bashrc &amp;&amp; export ROS_DOMAIN_ID=32 &amp;&amp; ros2 run yahboomcar_bringup Ackman_driver_R2 --ros-args -r __ns:=/robot_1&quot;</span>
+</pre></div>
+</div>
+<p><strong>Step 1:</strong> Create a launch file.</p>
+<p>You need to create a launch file that will start all your custom-made nodes or processes. This example file brings up:</p>
+<ol class="arabic simple">
+<li><p>test node from <em>hello_world_pkg</em>, which publishes a simple message</p></li>
+<li><p>node that reads an ArUco marker and publishes a topic with ArUco markers position <code class="docutils literal notranslate"><span class="pre">/aruco_position</span></code></p></li>
+<li><p>node the implements the following algorithm based on <code class="docutils literal notranslate"><span class="pre">/aruco_position</span></code> topic</p></li>
+</ol>
+<p><em>master.launch.py</em></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ament_index_python</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_package_share_directory</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">launch</span><span class="w"> </span><span class="kn">import</span> <span class="n">LaunchDescription</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">launch.actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimerAction</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">launch_ros.actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Node</span><span class="p">,</span> <span class="n">PushRosNamespace</span>
+
+<span class="n">params_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_package_share_directory</span><span class="p">(</span><span class="s1">&#39;controller_package&#39;</span><span class="p">),</span> <span class="s1">&#39;config&#39;</span><span class="p">,</span> <span class="s1">&#39;params.yaml&#39;</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_launch_description</span><span class="p">():</span>
+
+    <span class="n">custom_node</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span>
+        <span class="n">package</span><span class="o">=</span><span class="s1">&#39;hello_world_pkg&#39;</span><span class="p">,</span>
+        <span class="n">executable</span><span class="o">=</span><span class="s1">&#39;simplepub&#39;</span><span class="p">,</span>
+    	<span class="n">output</span><span class="o">=</span><span class="s1">&#39;screen&#39;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># ros2 run controller_package aruco_reader_node</span>
+    <span class="n">aruco_reader</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span>
+        <span class="n">package</span><span class="o">=</span><span class="s1">&#39;controller_package&#39;</span><span class="p">,</span>
+        <span class="n">executable</span><span class="o">=</span><span class="s1">&#39;aruco_reader_node&#39;</span><span class="p">,</span>
+	    <span class="n">arguments</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;--output&#39;</span><span class="p">,</span> <span class="s1">&#39;robot_1&#39;</span><span class="p">],</span>
+    <span class="p">)</span>
+
+    <span class="c1"># ros2 run controller_package follow_node --output robot_1</span>
+    <span class="n">follow</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span>
+        <span class="n">package</span><span class="o">=</span><span class="s1">&#39;controller_package&#39;</span><span class="p">,</span>
+        <span class="n">executable</span><span class="o">=</span><span class="s1">&#39;follow_node&#39;</span><span class="p">,</span>
+        <span class="n">arguments</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;--output&#39;</span><span class="p">,</span> <span class="s1">&#39;robot_1&#39;</span><span class="p">],</span>
+        <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="n">params_file</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">LaunchDescription</span><span class="p">([</span>
+        <span class="n">PushRosNamespace</span><span class="p">(</span><span class="s1">&#39;robot_1&#39;</span><span class="p">),</span>
+        <span class="n">custom_node</span><span class="p">,</span>
+        <span class="n">aruco_reader</span><span class="p">,</span>
+        <span class="n">follow</span>
+    <span class="p">])</span>
+</pre></div>
+</div>
+<p><strong>Step 2:</strong> Transmit the file to the NVIDIA Jetson.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scp</span> <span class="o">-</span><span class="n">r</span> <span class="o">~/</span><span class="n">mariia_ws</span><span class="o">/</span><span class="n">src</span><span class="o">/</span><span class="n">controller_package</span><span class="o">/</span><span class="n">launch</span><span class="o">/</span><span class="n">master</span><span class="o">.</span><span class="n">launch</span><span class="o">.</span><span class="n">py</span> <span class="n">jetson</span><span class="o">@</span><span class="mf">192.168.1.119</span><span class="p">:</span><span class="o">~/</span><span class="n">custom_robot_ws</span><span class="o">/</span><span class="n">src</span><span class="o">/</span><span class="n">controller_package</span><span class="o">/</span><span class="n">launch</span>
+</pre></div>
+</div>
+<p><strong>Step 3:</strong> Recompile the package.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">exec</span> <span class="o">-</span><span class="n">it</span> <span class="n">yahboom_robot</span> <span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">bash</span>
+<span class="n">cd</span> <span class="n">root</span><span class="o">/</span><span class="n">custom_robot_ws</span>
+<span class="n">rm</span> <span class="o">-</span><span class="n">rf</span> <span class="n">build</span> <span class="n">install</span>
+<span class="n">colcon</span> <span class="n">build</span>
+<span class="n">exit</span>
+</pre></div>
+</div>
+<p><strong>Step 4:</strong> Create an entrypoint file on the NVIDIA Jetson.</p>
+<p>Its main job is to configure the environment and launch two separate ROS2 processes in a specific order.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">nano</span> <span class="n">custom_entrypoint</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+<p><em>custom_entrypoint.sh</em></p>
+<div class="highlight-jsx notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="nx">source</span><span class="w"> </span><span class="o">/</span><span class="nx">root</span><span class="o">/</span><span class="p">.</span><span class="nx">bashrc</span>
+<span class="k">export</span><span class="w"> </span><span class="nx">ROS_DOMAIN_ID</span><span class="o">=</span><span class="mf">32</span>
+
+<span class="nx">echo</span><span class="w"> </span><span class="s2">&quot;[PROCESS 1] Starting Ackman_driver_R2 in background...&quot;</span>
+<span class="nx">ros2</span><span class="w"> </span><span class="nx">run</span><span class="w"> </span><span class="nx">yahboomcar_bringup</span><span class="w"> </span><span class="nx">Ackman_driver_R2</span><span class="w"> </span><span class="o">--</span><span class="nx">ros</span><span class="o">-</span><span class="nx">args</span><span class="w"> </span><span class="o">-</span><span class="nx">r</span><span class="w"> </span><span class="nx">__ns</span><span class="o">:=</span><span class="err">/robot_1 &amp;</span>
+
+<span class="nx">sleep</span><span class="w"> </span><span class="mf">2</span>
+
+<span class="k">if</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="o">-</span><span class="nx">f</span><span class="w"> </span><span class="s2">&quot;/root/custom_robot_ws/install/setup.bash&quot;</span><span class="w"> </span><span class="p">];</span><span class="w"> </span><span class="nx">then</span>
+<span class="w">    </span><span class="nx">echo</span><span class="w"> </span><span class="s2">&quot;[PROCESS 2] Custom_robot_ws detected. Sourcing and launching...&quot;</span>
+<span class="w">    </span><span class="nx">source</span><span class="w"> </span><span class="o">/</span><span class="nx">root</span><span class="o">/</span><span class="nx">custom_robot_ws</span><span class="o">/</span><span class="nx">install</span><span class="o">/</span><span class="nx">setup</span><span class="p">.</span><span class="nx">bash</span>
+<span class="w">    </span><span class="nx">ros2</span><span class="w"> </span><span class="nx">launch</span><span class="w"> </span><span class="nx">controller_package</span><span class="w"> </span><span class="nx">master</span><span class="p">.</span><span class="nx">launch</span><span class="p">.</span><span class="nx">py</span>
+<span class="k">else</span>
+<span class="w">    </span><span class="nx">echo</span><span class="w"> </span><span class="s2">&quot;WARNING: Custom_robot_ws was not found!&quot;</span>
+<span class="nx">fi</span>
+</pre></div>
+</div>
+<ol class="arabic simple">
+<li><p>Starting up the main program of Ackman_driver_R2 in background.</p></li>
+<li><p>Starting custom-made <em>master.launch.py</em> that brings up all necessary nodes.</p></li>
+</ol>
+<p><strong>Step 5:</strong> Modify the <em>run_docker_offline.sh.</em></p>
+<p>Last line should be like this:</p>
+<div class="highlight-jsx notranslate"><div class="highlight"><pre><span></span><span class="err">/bin/bash -i -c &quot;/home/jetson/custom_entrypoint.sh&quot;</span>
+</pre></div>
+</div>
+<p><strong>Step 6:</strong> Restart the Docker container.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">stop</span> <span class="n">yahboom_robot</span> <span class="o">&amp;&amp;</span> <span class="n">docker</span> <span class="n">rm</span> <span class="n">yahboom_robot</span>
+<span class="o">./</span><span class="n">run_docker_offline</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+</section>
+<section id="pipeline-for-developing-a-vision-based-algorithm-on-yahboom">
+<h2>Pipeline for developing a vision-based algorithm on Yahboom<a class="headerlink" href="#pipeline-for-developing-a-vision-based-algorithm-on-yahboom" title="Link to this heading"></a></h2>
+<p>In this specific example, an ArUco vision-based following task was implemented. One of the Yahboom robots was a leading robot, had an ArUco marker on its back, and was controlled by command:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ros2</span> <span class="n">run</span> <span class="n">teleop_twist_keyboard</span> <span class="n">teleop_twist_keyboard</span>
+</pre></div>
+</div>
+<p>The second Yahboom robot was the following one. The algorithm had such a structure:</p>
+<ol class="arabic simple">
+<li><p>Node <code class="docutils literal notranslate"><span class="pre">aruco_reader</span></code> was detecting the ArUco marker on the back of the leading robot and defining its position. Calculated position was published to <code class="docutils literal notranslate"><span class="pre">/aruco_position</span></code> topic. Camera was accessed with <code class="docutils literal notranslate"><span class="pre">cv2</span></code> Python library.</p></li>
+<li><p>Node <code class="docutils literal notranslate"><span class="pre">follow</span></code> was implementing the following algorithm. Based on  <code class="docutils literal notranslate"><span class="pre">/aruco_position</span></code> topic data it was calculating the linear and angular velocities for Yahboom robot and publishing it to <code class="docutils literal notranslate"><span class="pre">cmd_vel</span></code> topic.</p></li>
+</ol>
+<p><img alt="NVIDIA Jetson.png" src="_images/NVIDIA_Jetson.png" /></p>
+<p><strong>ArUco reading</strong></p>
+<p>Everything starts with setting up a publisher for a <code class="docutils literal notranslate"><span class="pre">geometry_msgs/msg/Point</span></code> message. With <code class="docutils literal notranslate"><span class="pre">output</span></code> argument, you can define a namespace.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">position_publisher</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_publisher</span><span class="p">(</span><span class="n">Point</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;/</span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s1">/aruco_position&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For markers detecting <code class="docutils literal notranslate"><span class="pre">DICT_4X4_50</span></code> ArUco dictionary (a set of 50 distinct 4x4 matrix markers) was used. It configures OpenCV to look specifically for markers from this dictionary.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">aruco_dict</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">aruco</span><span class="o">.</span><span class="n">getPredefinedDictionary</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">aruco</span><span class="o">.</span><span class="n">DICT_4X4_50</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">aruco_params</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">aruco</span><span class="o">.</span><span class="n">DetectorParameters</span><span class="p">()</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">detector</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">aruco</span><span class="o">.</span><span class="n">ArucoDetector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aruco_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">aruco_params</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The camera local webcam stream is accessed with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">camera_index</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">cap</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoCapture</span><span class="p">(</span><span class="n">camera_index</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">cap</span><span class="o">.</span><span class="n">isOpened</span><span class="p">():</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">get_logger</span><span class="p">()</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Could not open local video stream/webcam!&quot;</span><span class="p">)</span>
+    <span class="k">return</span>
+</pre></div>
+</div>
+<p>You can check the camera index with the command:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ls</span> <span class="o">-</span><span class="n">l</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">video</span><span class="o">*</span>
+</pre></div>
+</div>
+<p>Because it doesn’t read a live ROS <code class="docutils literal notranslate"><span class="pre">/camera_info</span></code> topic, it utilizes a hardcoded <em>placeholder camera matrix</em> to approximate a standard 640x480 resolution lens profile.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">camera_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">650.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">320.0</span><span class="p">],</span>
+                               <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">650.0</span><span class="p">,</span> <span class="mf">240.0</span><span class="p">],</span>
+                               <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Timer creates a loop that calls the main function every 0.033 seconds, effectively processing the video at roughly <strong>30 frames per second (FPS)</strong>.</p>
+<p>If frame reading is successful, it is converted to a grayscale image from BGR color so that OpenCV’s marker detection algorithms would be applicable. The algorithm scans the frame for black-and-white squares. If it finds any, it returns their pixel coordinates (<code class="docutils literal notranslate"><span class="pre">corners</span></code>) and their specific identities (<code class="docutils literal notranslate"><span class="pre">ids</span></code>).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">gray</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_BGR2GRAY</span><span class="p">)</span>
+<span class="n">corners</span><span class="p">,</span> <span class="n">ids</span><span class="p">,</span> <span class="n">rejected</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detector</span><span class="o">.</span><span class="n">detectMarkers</span><span class="p">(</span><span class="n">gray</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If <strong>Marker ID 0</strong> is found in the frame, the script performs 3D math:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="mi">0</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">:</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">ids</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="n">marker_corners</span> <span class="o">=</span> <span class="n">corners</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">half_l</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">marker_length</span> <span class="o">/</span> <span class="mf">2.0</span>
+        <span class="n">obj_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+            <span class="p">[</span><span class="o">-</span><span class="n">half_l</span><span class="p">,</span>  <span class="n">half_l</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+            <span class="p">[</span> <span class="n">half_l</span><span class="p">,</span>  <span class="n">half_l</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+            <span class="p">[</span> <span class="n">half_l</span><span class="p">,</span> <span class="o">-</span><span class="n">half_l</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+            <span class="p">[</span><span class="o">-</span><span class="n">half_l</span><span class="p">,</span> <span class="o">-</span><span class="n">half_l</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+        <span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        
+        <span class="n">_</span><span class="p">,</span> <span class="n">rvec</span><span class="p">,</span> <span class="n">tvec</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">solvePnP</span><span class="p">(</span>
+            <span class="n">obj_points</span><span class="p">,</span> <span class="n">marker_corners</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">camera_matrix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist_coeffs</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">SOLVEPNP_IPPE_SQUARE</span>
+        <span class="p">)</span>
+
+        <span class="n">x_cam</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tvec</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">y_cam</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tvec</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">z_cam</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tvec</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+<ol class="arabic simple">
+<li><p>It maps out where the four corners of the marker <em>should</em> be in real life (<code class="docutils literal notranslate"><span class="pre">half_l</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cv2.solvePnP</span></code> solves the <strong>Perspective-n-Point</strong> problem. By comparing where the 4 corners are in the 2D image pixel space versus where they should be in 3D physical space (using the lens matrix parameters), it calculates the marker’s 3D transformation.</p></li>
+<li><p>The output vectors give us <code class="docutils literal notranslate"><span class="pre">rvec</span></code> (rotation) and <code class="docutils literal notranslate"><span class="pre">tvec</span></code> (translation). The translation vector contains the exact distance from the camera center:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">x_cam</span></code>: Left/Right position relative to the lens.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">y_cam</span></code>: Up/Down position relative to the lens.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">z_cam</span></code>: Forward distance (Depth) away from the lens in meters.</p></li>
+</ul>
+</li>
+</ol>
+<p>Publishing a position message to <code class="docutils literal notranslate"><span class="pre">/aruco_porition</span></code> topic.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">msg</span> <span class="o">=</span> <span class="n">Point</span><span class="p">()</span>
+<span class="n">msg</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">x_cam</span><span class="p">)</span>
+<span class="n">msg</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">y_cam</span><span class="p">)</span>
+<span class="n">msg</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">z_cam</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">position_publisher</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">get_logger</span><span class="p">()</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;X: </span><span class="si">{</span><span class="n">x_cam</span><span class="si">}</span><span class="s2">m, Y: </span><span class="si">{</span><span class="n">y_cam</span><span class="si">}</span><span class="s2">m, Z (Distance): </span><span class="si">{</span><span class="n">z_cam</span><span class="si">}</span><span class="s2">m&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Following algorithm</strong></p>
+<p>The follow node is running automatically as a Docker container is created, but to enable/disable the following algorithm services used:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">enable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_service</span><span class="p">(</span><span class="n">Empty</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;/</span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s1">/enable_follow&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_follow_callback</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">disable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_service</span><span class="p">(</span><span class="n">Empty</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;/</span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s1">/disable_follow&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">disable_follow_callback</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Using <em>params.yaml</em> for parameters and P-controller coefficients:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">declare_parameter</span><span class="p">(</span><span class="s1">&#39;safe_distance&#39;</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">declare_parameter</span><span class="p">(</span><span class="s1">&#39;Kp_linear&#39;</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">declare_parameter</span><span class="p">(</span><span class="s1">&#39;Kp_angular&#39;</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">declare_parameter</span><span class="p">(</span><span class="s1">&#39;max_linear&#39;</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">)</span>        <span class="c1"># m/s</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">declare_parameter</span><span class="p">(</span><span class="s1">&#39;max_angular&#39;</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">)</span>        <span class="c1"># rad/s</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">declare_parameter</span><span class="p">(</span><span class="s1">&#39;distance_deadband&#39;</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">)</span> <span class="c1"># m</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">declare_parameter</span><span class="p">(</span><span class="s1">&#39;lateral_deadband&#39;</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">)</span>  <span class="c1"># m, ignore tiny offsets</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">declare_parameter</span><span class="p">(</span><span class="s1">&#39;heading_deadband&#39;</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">)</span>  <span class="c1"># rad</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">declare_parameter</span><span class="p">(</span><span class="s1">&#39;lost_timeout&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>       <span class="c1"># s, stop if no marker</span>
+
+</pre></div>
+</div>
+<p><em>params.yaml</em></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">follow</span><span class="p">:</span>
+  <span class="n">ros__parameters</span><span class="p">:</span>
+    <span class="n">safe_distance</span><span class="p">:</span> <span class="mf">0.3</span>        <span class="c1"># m, distance to keep behind the leader</span>
+    <span class="n">Kp_linear</span><span class="p">:</span> <span class="mf">0.4</span>            <span class="c1"># forward gain</span>
+    <span class="n">Kp_angular</span><span class="p">:</span> <span class="mf">0.3</span>           <span class="c1"># turn gain (lower = calmer steering)</span>
+    <span class="n">max_linear</span><span class="p">:</span> <span class="mf">0.25</span>          <span class="c1"># m/s, hard cap on forward speed</span>
+    <span class="n">max_angular</span><span class="p">:</span> <span class="mf">0.8</span>          <span class="c1"># rad/s, hard cap on turn rate</span>
+    <span class="n">distance_deadband</span><span class="p">:</span> <span class="mf">0.05</span>   <span class="c1"># m, don&#39;t creep for tiny distance errors</span>
+    <span class="n">lateral_deadband</span><span class="p">:</span> <span class="mf">0.03</span>    <span class="c1"># m, ignore small left/right offsets (kills jitter)</span>
+    <span class="n">heading_deadband</span><span class="p">:</span> <span class="mf">0.05</span>    <span class="c1"># rad, don&#39;t steer for tiny heading errors</span>
+    <span class="n">lost_timeout</span><span class="p">:</span> <span class="mf">0.5</span>         <span class="c1"># s, stop if marker not seen for this long</span>
+</pre></div>
+</div>
+<p>Subscription for <code class="docutils literal notranslate"><span class="pre">/aruco_position</span></code> topic to get ArUco marker position data and <code class="docutils literal notranslate"><span class="pre">/cmd_vel</span></code> publisher to make the robot move.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">pub</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_publisher</span><span class="p">(</span><span class="n">Twist</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s2">/cmd_vel&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">create_subscription</span><span class="p">(</span><span class="n">Point</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;/</span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s1">/aruco_position&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">position_callback</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Algorithm:</strong></p>
+<ol class="arabic">
+<li><p>Checking marker visibility, goal and timeout.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">marker_visible</span> <span class="o">=</span> <span class="p">(</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">follow_enabled</span>
+      <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">goal</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+      <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_seen</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+      <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_clock</span><span class="p">()</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_seen</span><span class="p">)</span><span class="o">.</span><span class="n">nanoseconds</span> <span class="o">*</span> <span class="mf">1e-9</span> <span class="o">&lt;</span> <span class="n">lost_timeout</span>
+  <span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p>Based on the goal calculating the distance error and scaling it with P-controller and <code class="docutils literal notranslate"><span class="pre">Kp_linear</span></code> parameter. Another parameter <code class="docutils literal notranslate"><span class="pre">distance_deadband</span></code> was used to filter small distance error.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">goal</span>
+<span class="c1"># --- distance control (forward/back to hold safe_distance) ---</span>
+<span class="n">distance_error</span> <span class="o">=</span> <span class="n">z</span> <span class="o">-</span> <span class="n">safe_distance</span>
+<span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">distance_error</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">distance_deadband</span><span class="p">:</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">Kp_linear</span> <span class="o">*</span> <span class="n">distance_error</span>
+</pre></div>
+</div>
+</li>
+<li><p>Using <code class="docutils literal notranslate"><span class="pre">lateral_deadband</span></code> to filter small lateral offsets. After heading error is defined <code class="docutils literal notranslate"><span class="pre">heading_deadband</span></code> and P-controller used again.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># --- heading control (ignore tiny lateral offsets) ---</span>
+<span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">lateral_deadband</span><span class="p">:</span>
+    <span class="n">heading_error</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">heading_error</span> <span class="o">=</span> <span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">heading_error</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">heading_deadband</span><span class="p">:</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">Kp_angular</span> <span class="o">*</span> <span class="n">heading_error</span>
+
+</pre></div>
+</div>
+</li>
+<li><p>“Turn First, Drive Later” smoothing</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">v</span> <span class="o">*=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">heading_error</span><span class="p">))</span>
+</pre></div>
+</div>
+</li>
+<li><p>Clamping values into boundaries.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">v</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="o">-</span><span class="n">max_linear</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">max_linear</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+<span class="n">w</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="o">-</span><span class="n">max_angular</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">max_angular</span><span class="p">,</span> <span class="n">w</span><span class="p">))</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p><strong>Pipeline:</strong></p>
+<ol class="arabic simple">
+<li><p>Create a algorithm package and transmit it to the NVIDIA Jetson.</p></li>
+<li><p>Build the package.</p></li>
+<li><p>Restart the Docker container, all nodes and topic will run automatically.</p></li>
+<li><p>Send <code class="docutils literal notranslate"><span class="pre">/enable_follow</span></code> to start target-following algorithm.</p></li>
+</ol>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<p>Sometimes, after modifying the code, the Docker container cannot be opened correctly to rebuild the new code. To rebuild, use <em>./run_debug.sh:</em></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nano<span class="w"> </span>...
+./run_debug.sh
+<span class="nb">cd</span><span class="w"> </span>/root/custom_robot_ws
+rm<span class="w"> </span>-rf<span class="w"> </span>build<span class="w"> </span>install
+colcon<span class="w"> </span>build<span class="w"> </span>--packages-select<span class="w"> </span>controller_package
+<span class="nb">exit</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>stop<span class="w"> </span>yahboom_robot<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>docker<span class="w"> </span>rm<span class="w"> </span>yahboom_robot
+./run_docker_offline.sh
+</pre></div>
+</div>
+<p><em>run_debug.sh</em></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-it<span class="w"> </span><span class="se">\</span>
+--name<span class="w"> </span>yahboom_debug<span class="w"> </span><span class="se">\</span>
+--net<span class="o">=</span>host<span class="w"> </span><span class="se">\</span>
+--privileged<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span>/home:/home<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span>/home/jetson/custom_robot_ws:/root/custom_robot_ws<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span>/home/jetson/tmp:/root/yahboomcar/tmp<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span>/home/jetson/rosboard:/root/rosboard<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span>/home/jetson/maps:/root/maps<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span>/dev:/dev<span class="w"> </span><span class="se">\</span>
+--device<span class="o">=</span>/dev/myserial<span class="w"> </span><span class="se">\</span>
+--device<span class="o">=</span>/dev/video0<span class="w"> </span><span class="se">\</span>
+-e<span class="w"> </span><span class="nv">ROS_DOMAIN_ID</span><span class="o">=</span><span class="m">32</span><span class="w"> </span><span class="se">\</span>
+yahboom_ros_offline1<span class="w"> </span><span class="se">\</span>
+/bin/bash
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Target Following ROS2 Project" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Lab Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

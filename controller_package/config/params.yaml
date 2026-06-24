@@ -1,0 +1,11 @@
+follow:
+  ros__parameters:
+    safe_distance: 0.3        # m, distance to keep behind the leader
+    Kp_linear: 0.4            # forward gain
+    Kp_angular: 0.3           # turn gain
+    max_linear: 0.25          # m/s, hard cap on forward speed
+    max_angular: 0.8          # rad/s, hard cap on turn rate
+    distance_deadband: 0.05   # m, don't creep for tiny distance errors
+    lateral_deadband: 0.03    # m, ignore small left/right offsets (kills jitter)
+    heading_deadband: 0.05    # rad, don't steer for tiny heading errors
+    lost_timeout: 0.5         # s, stop if marker not seen for this long

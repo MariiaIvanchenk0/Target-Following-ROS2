@@ -1,0 +1,10 @@
+# Vision-Based Tracking Pipeline
+
+This page documents the image processing and control logic used to follow an ArUco marker.
+
+## How the Algorithm Works
+The software processes video frames at 30 FPS to calculate the real-time relative 3D coordinate frame of a target marker.
+
+### Safety Features
+* **Watchdog Timeout:** If the target marker is lost for longer than the timeout period, the node clears its filter states and commands zero velocity to prevent runaway conditions.
+* **Turn-First Logic:** Forward velocity is scaled by the cosine of the heading error, forcing the robot to pivot toward the target before accelerating forward.

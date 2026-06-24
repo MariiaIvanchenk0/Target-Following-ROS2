@@ -1,0 +1,15 @@
+
+aruco_detector_node:
+  ros__parameters:
+    image_topic: "/image_raw"
+    position_topic: "/robot_2/aruco_position"
+    aruco_dictionary: "DICT_6X6_250"
+    marker_size: 0.14
+
+aruco_follower_node:
+  ros__parameters:
+    position_topic: "/robot_2/aruco_position"
+    cmd_vel_topic: "/robot_2/cmd_vel"
+    desired_distance: 0.5
+    kp_linear: 0.4
+    kp_angular: 1.2
