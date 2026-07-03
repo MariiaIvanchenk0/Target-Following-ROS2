@@ -1,0 +1,516 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Yahboom ROSMASTER R2 Vision Development Guide &mdash; Target Following ROS2 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8d563738"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Target Following ROS2
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Robot Deployment</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="target-following-mariia.html">Target-Following Task Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Target Following ROS2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Yahboom ROSMASTER R2 Vision Development Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/yahboom-documentation-daniel.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="yahboom-rosmaster-r2-vision-development-guide">
+<h1>Yahboom ROSMASTER R2 Vision Development Guide<a class="headerlink" href="#yahboom-rosmaster-r2-vision-development-guide" title="Link to this heading"></a></h1>
+<p><strong>CAMS-Lab</strong></p>
+<p>Prepared By: Daniel Xie</p>
+<p>June 21, 2026</p>
+<blockquote>
+<div><p><strong>Comment:</strong></p>
+<ul class="simple">
+<li><p>Add rationales for each sub-section</p></li>
+<li><p>Make command lines distinct from regular text</p></li>
+<li><p>Add diagram for the overall system architecture</p></li>
+<li><p>Add more comprehensive description for each sub-system</p></li>
+<li><p>Rework on automatic startup sequence</p></li>
+</ul>
+</div></blockquote>
+<section id="objective">
+<h2>Objective<a class="headerlink" href="#objective" title="Link to this heading"></a></h2>
+<p>This document summarizes the procedures developed during the implementation of a vision-based robot following system on the Yahboom ROSMASTER R2 platform. The guide covers:</p>
+<ul class="simple">
+<li><p>Managing ROS2 packages and Python libraries inside Docker containers</p></li>
+<li><p>Modifying and understanding the robot startup sequence</p></li>
+<li><p>Developing, deploying, and testing vision-based algorithms using ROS2</p></li>
+<li><p>Current implementation status and future improvements</p></li>
+</ul>
+</section>
+<section id="system-overview">
+<h2>System Overview<a class="headerlink" href="#system-overview" title="Link to this heading"></a></h2>
+<p>The Yahboom ROSMASTER R2 platform uses a Jetson-based computer running ROS2 Humble inside a Docker container. For this reason, development is performed through SSH and Docker.</p>
+<p>The current vision pipeline consists of:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">USB</span> <span class="n">Camera</span> <span class="o">-&gt;</span> <span class="n">usb_cam</span> <span class="o">-&gt;</span> <span class="o">/</span><span class="n">image_raw</span> <span class="o">-&gt;</span> <span class="n">ArUco</span> <span class="n">Detector</span> <span class="o">-&gt;</span> <span class="o">/</span><span class="n">aruco_position</span> <span class="o">-&gt;</span> <span class="n">Follower</span> <span class="n">Controller</span> <span class="o">-&gt;</span> <span class="o">/</span><span class="n">cmd_vel</span> <span class="o">-&gt;</span> <span class="n">Robot</span> <span class="n">Motion</span>
+</pre></div>
+</div>
+<p>The system currently performs marker-based autonomous following using OpenCV ArUco detection and ROS2.</p>
+</section>
+<hr class="docutils" />
+<section id="section-1-managing-ros2-packages-and-python">
+<h2>Section 1: Managing ROS2 Packages and Python<a class="headerlink" href="#section-1-managing-ros2-packages-and-python" title="Link to this heading"></a></h2>
+<p>To manage ROS2 packages and Python, the robot must first be accessed through the following steps:</p>
+<section id="accessing-the-robot">
+<h3>1. Accessing the Robot<a class="headerlink" href="#accessing-the-robot" title="Link to this heading"></a></h3>
+<p>SSH into the Jetson:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ssh<span class="w"> </span>jetson@&lt;robot_ip&gt;
+</pre></div>
+</div>
+<p>Example for Yahboom ROSMASTER R2 #1:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ssh<span class="w"> </span>jetson@192.168.1.119
+</pre></div>
+</div>
+</section>
+<section id="entering-the-docker-container">
+<h3>2. Entering the Docker Container<a class="headerlink" href="#entering-the-docker-container" title="Link to this heading"></a></h3>
+<p>View running containers:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>ps
+</pre></div>
+</div>
+<p>Enter container:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>yahboom_robot<span class="w"> </span>bash
+</pre></div>
+</div>
+<p>Verify ROS installation:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">source</span><span class="w"> </span>/opt/ros/humble/setup.bash
+ros2<span class="w"> </span>topic<span class="w"> </span>list
+</pre></div>
+</div>
+<p>Export Domain ID:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">ROS_DOMAIN_ID</span><span class="o">=</span><span class="m">32</span>
+</pre></div>
+</div>
+</section>
+<section id="installing-python-libraries">
+<h3>Installing Python Libraries<a class="headerlink" href="#installing-python-libraries" title="Link to this heading"></a></h3>
+<p>Python packages are installed directly inside the container.</p>
+<p>Example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>opencv-contrib-python
+</pre></div>
+</div>
+<p>Verify installation:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>list<span class="w">       </span><span class="c1"># OR</span>
+pip<span class="w"> </span>show<span class="w"> </span>opencv-contrib-python
+</pre></div>
+</div>
+</section>
+<section id="removing-python-libraries">
+<h3>Removing Python Libraries<a class="headerlink" href="#removing-python-libraries" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>uninstall<span class="w"> </span>package_name
+</pre></div>
+</div>
+<p>Example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>uninstall<span class="w"> </span>opencv-contrib-python
+</pre></div>
+</div>
+</section>
+<section id="installing-ros2-packages">
+<h3>Installing ROS2 Packages<a class="headerlink" href="#installing-ros2-packages" title="Link to this heading"></a></h3>
+<p>ROS2 packages can be installed through apt:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>apt<span class="w"> </span>update
+apt<span class="w"> </span>install<span class="w"> </span>ros-humble-package-name
+</pre></div>
+</div>
+<p>Example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>apt<span class="w"> </span>install<span class="w"> </span>ros-humble-usb-cam
+</pre></div>
+</div>
+<p>Verify installation:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>pkg<span class="w"> </span>list<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>usb_cam<span class="w">    </span><span class="c1"># OR</span>
+ros2<span class="w"> </span>pkg<span class="w"> </span>list
+</pre></div>
+</div>
+</section>
+<section id="creating-a-custom-ros2-package">
+<h3>Creating a Custom ROS2 Package<a class="headerlink" href="#creating-a-custom-ros2-package" title="Link to this heading"></a></h3>
+<p>Navigate to workspace:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>~/ws/src
+</pre></div>
+</div>
+<p>Create package:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>pkg<span class="w"> </span>create<span class="w"> </span>follower_bot<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--build-type<span class="w"> </span>ament_python
+</pre></div>
+</div>
+<p>Package structure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>follower_bot/
+├── config/
+├── launch/
+├── follower_bot/
+├── package.xml
+├── setup.py
+└── setup.cfg
+</pre></div>
+</div>
+</section>
+<section id="building-packages">
+<h3>Building Packages<a class="headerlink" href="#building-packages" title="Link to this heading"></a></h3>
+<p>Navigate to workspace:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>~/ws
+</pre></div>
+</div>
+<p>Build package:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>colcon<span class="w"> </span>build<span class="w"> </span>--packages-select<span class="w"> </span>follower_bot
+</pre></div>
+</div>
+<p>Source workspace:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">source</span><span class="w"> </span>install/setup.bash
+</pre></div>
+</div>
+<p>Verify package:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>pkg<span class="w"> </span>list<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>follower_bot
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="section-2-startup-sequence">
+<h2>Section 2: Startup Sequence<a class="headerlink" href="#section-2-startup-sequence" title="Link to this heading"></a></h2>
+<section id="existing-startup-architecture">
+<h3>Existing Startup Architecture<a class="headerlink" href="#existing-startup-architecture" title="Link to this heading"></a></h3>
+<p>The Yahboom system launches a Docker container during startup.</p>
+<p>Within the container, ROS2 nodes are initialized and robot hardware drivers begin publishing topics. Currently, the publishes are:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">cmd_vel</span>
+<span class="o">/</span><span class="n">imu</span><span class="o">/</span><span class="n">data_raw</span>
+<span class="o">/</span><span class="n">vel_raw</span>
+<span class="o">/</span><span class="n">voltage</span>
+</pre></div>
+</div>
+<p>The system operates on:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ROS_DOMAIN_ID</span><span class="o">=</span><span class="mi">32</span>
+</pre></div>
+</div>
+</section>
+<section id="understanding-startup">
+<h3>Understanding Startup<a class="headerlink" href="#understanding-startup" title="Link to this heading"></a></h3>
+<p>To inspect the container:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>ps
+</pre></div>
+</div>
+<p>Inspect logs:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>logs<span class="w"> </span>yahboom_robot
+</pre></div>
+</div>
+<p>Access running container:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>yahboom_robot<span class="w"> </span>bash
+</pre></div>
+</div>
+</section>
+<section id="launching-custom-applications">
+<h3>Launching Custom Applications<a class="headerlink" href="#launching-custom-applications" title="Link to this heading"></a></h3>
+<p>Current custom application:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>launch<span class="w"> </span>follower_bot<span class="w"> </span>aruco_follow.launch.py
+</pre></div>
+</div>
+<p>This launch file starts:</p>
+<ol class="arabic simple">
+<li><p>usb_cam node</p></li>
+<li><p>ArUco detector node</p></li>
+<li><p>ArUco follower node</p></li>
+</ol>
+<p>Other terminals can be manually created to echo topics.</p>
+</section>
+<section id="verification">
+<h3>Verification<a class="headerlink" href="#verification" title="Link to this heading"></a></h3>
+<p>Nodes and topics can be verified as well. This can be done with the following commands:</p>
+<p>Verify nodes:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>node<span class="w"> </span>list
+</pre></div>
+</div>
+<p>Verify topics:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>topic<span class="w"> </span>list
+</pre></div>
+</div>
+<p>Expected topics:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">image_raw</span>
+<span class="o">/</span><span class="n">aruco_position</span>
+<span class="o">/</span><span class="n">cmd_vel</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="section-3-vision-based-development-pipeline">
+<h2>Section 3: Vision-Based Development Pipeline<a class="headerlink" href="#section-3-vision-based-development-pipeline" title="Link to this heading"></a></h2>
+<section id="overview">
+<h3>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h3>
+<p>A complete vision pipeline was developed for autonomous robot following using ArUco markers.</p>
+<p>The goal is to maintain a fixed distance from a target marker while continuously centering the marker within the camera field of view.</p>
+</section>
+<section id="i-camera-setup">
+<h3>I: Camera Setup<a class="headerlink" href="#i-camera-setup" title="Link to this heading"></a></h3>
+<p>This sets up the USB camera connected to the robot.</p>
+<p>Verify camera:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ls<span class="w"> </span>/dev/video*
+</pre></div>
+</div>
+<p>Expected output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">video0</span>
+</pre></div>
+</div>
+<p>If this output is not given, then the camera cannot be found.</p>
+<p>Launch camera:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>run<span class="w"> </span>usb_cam<span class="w"> </span>usb_cam_node_exe
+</pre></div>
+</div>
+<p>Verify image topic:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>topic<span class="w"> </span>list<span class="w">   </span><span class="c1"># should output /image_raw, among other topics</span>
+</pre></div>
+</div>
+</section>
+<section id="ii-aruco-detection">
+<h3>II: ArUco Detection<a class="headerlink" href="#ii-aruco-detection" title="Link to this heading"></a></h3>
+<p>A custom node is designed for ArUco detection, in this case, called:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">aruco_detector</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>Functions:</p>
+<ul class="simple">
+<li><p>Subscribe to <code class="docutils literal notranslate"><span class="pre">/image_raw</span></code></p></li>
+<li><p>Detect ArUco markers</p></li>
+<li><p>Estimate marker pose</p></li>
+<li><p>Publish marker position</p></li>
+</ul>
+<p>Published topic:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">aruco_position</span>
+</pre></div>
+</div>
+<p>Published values:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">x</span></code> = lateral offset</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">y</span></code> = vertical offset</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">z</span></code> = distance from camera</p></li>
+</ul>
+<p>Though the vertical offset is published, this simulation works mobile ground robots, where all motion is isolated on the ground plane.</p>
+</section>
+<section id="iii-follower-controller">
+<h3>III: Follower Controller<a class="headerlink" href="#iii-follower-controller" title="Link to this heading"></a></h3>
+<p>A custom node is designed for ArUco following, in this case, called:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">aruco_follower</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>Functions:</p>
+<ul class="simple">
+<li><p>Subscribe to marker position</p></li>
+<li><p>Compute distance error</p></li>
+<li><p>Compute lateral error</p></li>
+<li><p>Generate velocity commands</p></li>
+</ul>
+<p>Published topic:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">cmd_vel</span>
+</pre></div>
+</div>
+<p>The controller used is a PD controller, which provides proportional and derivative control. Integral control is not necessary for this application as exact precision is not needed.</p>
+<p>Inputs:</p>
+<ul class="simple">
+<li><p>Distance error</p></li>
+<li><p>Lateral error</p></li>
+</ul>
+<p>Outputs:</p>
+<ul class="simple">
+<li><p>Linear velocity</p></li>
+<li><p>Angular velocity</p></li>
+</ul>
+</section>
+<section id="iv-parameter-configuration">
+<h3>IV: Parameter Configuration<a class="headerlink" href="#iv-parameter-configuration" title="Link to this heading"></a></h3>
+<p>A configuration file is created to allow for simple changes including marker size, desired distance, kp/kd values for PD control, and ArUco type. The configuration file is named:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">config</span><span class="o">/</span><span class="n">aruco_params</span><span class="o">.</span><span class="n">yaml</span>
+</pre></div>
+</div>
+<p>Example values in the yaml file are:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">marker_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.14</span>
+<span class="nt">desired_distance</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.5</span>
+<span class="nt">kp_linear</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.4</span>
+<span class="nt">kd_linear</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.05</span>
+<span class="nt">kp_angular</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.2</span>
+<span class="nt">kd_angular</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.08</span>
+</pre></div>
+</div>
+</section>
+<section id="v-launch-system">
+<h3>V: Launch System<a class="headerlink" href="#v-launch-system" title="Link to this heading"></a></h3>
+<p>Build workspace:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>~/ws
+colcon<span class="w"> </span>build<span class="w"> </span>--packages-select<span class="w"> </span>follower_bot
+<span class="nb">source</span><span class="w"> </span>install/setup.bash
+</pre></div>
+</div>
+<p>This step must be done after changes to any node in the package. To launch:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>launch<span class="w"> </span>follower_bot<span class="w"> </span>aruco_follow.launch.py
+</pre></div>
+</div>
+</section>
+<section id="vi-testing-procedure">
+<h3>VI: Testing Procedure<a class="headerlink" href="#vi-testing-procedure" title="Link to this heading"></a></h3>
+<p>After the system is launching as expected, it can be tested without a lead robot. There are a variety of test procedures that can be used. An example is provided:</p>
+<p>Place marker approximately 1 m in front of robot and observe the logs. These logs are automatically opened through the launch file. An example output is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">distance</span><span class="o">=</span><span class="mf">0.92</span>
+<span class="n">lateral</span><span class="o">=</span><span class="mf">0.25</span>
+<span class="n">linear</span><span class="o">=</span><span class="mf">0.16</span>
+<span class="n">angular</span><span class="o">=-</span><span class="mf">0.32</span>
+</pre></div>
+</div>
+<p>Note that the distance value is not exactly 1 m. This is expected if the ArUco marker is displayed at an angle.</p>
+<p>The expected behavior is:</p>
+<ul class="simple">
+<li><p>Robot turns toward marker</p></li>
+<li><p>Robot approaches marker</p></li>
+<li><p>Robot maintains target distance</p></li>
+<li><p>Robot recenters marker</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="section-4-current-results-and-next-steps">
+<h2>Section 4: Current Results and Next Steps<a class="headerlink" href="#section-4-current-results-and-next-steps" title="Link to this heading"></a></h2>
+<p>Currently, the following has been completed and fully tested:</p>
+<ul class="simple">
+<li><p>Docker-based ROS2 development workflow</p></li>
+<li><p>OpenCV ArUco detection</p></li>
+<li><p>Pose estimation</p></li>
+<li><p>USB camera integration</p></li>
+<li><p>ROS2 custom package creation</p></li>
+<li><p>Launch-file based deployment</p></li>
+<li><p>YAML parameter configuration</p></li>
+<li><p>PD control implementation</p></li>
+<li><p>Autonomous marker following</p></li>
+</ul>
+<section id="future-work">
+<h3>Future Work<a class="headerlink" href="#future-work" title="Link to this heading"></a></h3>
+<section id="priority-1-vicon-integration">
+<h4>Priority 1: Vicon Integration<a class="headerlink" href="#priority-1-vicon-integration" title="Link to this heading"></a></h4>
+<p>Objective: Use external motion capture system for ground-truth localization.</p>
+<p>Potential applications:</p>
+<ul class="simple">
+<li><p>Accuracy benchmarking</p></li>
+<li><p>Controller validation</p></li>
+<li><p>Sensor fusion</p></li>
+<li><p>Research demonstrations</p></li>
+</ul>
+</section>
+<section id="priority-2-lidar-integration">
+<h4>Priority 2: LiDAR Integration<a class="headerlink" href="#priority-2-lidar-integration" title="Link to this heading"></a></h4>
+<p>Objective: Utilize onboard LiDAR for obstacle detection and collision avoidance.</p>
+<p>Potential additions:</p>
+<ul class="simple">
+<li><p>Obstacle detection node</p></li>
+<li><p>Obstacle avoidance controller</p></li>
+<li><p>LaserScan processing</p></li>
+<li><p>Safety layer on top of lead controller</p></li>
+</ul>
+</section>
+<section id="priority-3-lost-marker-recovery">
+<h4>Priority 3: Lost Marker Recovery<a class="headerlink" href="#priority-3-lost-marker-recovery" title="Link to this heading"></a></h4>
+<p>Current limitation: Robot stops when marker leaves the camera view. Caused by sudden turns by the lead robot.</p>
+<p>Future improvement:</p>
+<ul class="simple">
+<li><p>Remember last marker position</p></li>
+<li><p>Rotate toward last known location</p></li>
+<li><p>Reacquire marker automatically</p></li>
+</ul>
+</section>
+<section id="priority-4-lead-follower-communication">
+<h4>Priority 4: Lead-Follower Communication<a class="headerlink" href="#priority-4-lead-follower-communication" title="Link to this heading"></a></h4>
+<p>Currently: No lead robot setup. All ArUco testing done manually.</p>
+<p>Additions:</p>
+<ul class="simple">
+<li><p>Lead robot setup that can be controlled with keyboard inputs</p></li>
+<li><p>Lead-follower communication if the marker is lost</p></li>
+<li><p>Reacquire marker automatically</p></li>
+</ul>
+</section>
+</section>
+<section id="current-status-and-summary">
+<h3>Current Status and Summary<a class="headerlink" href="#current-status-and-summary" title="Link to this heading"></a></h3>
+<p>The Yahboom ROSMASTER R2 platform is now capable of performing autonomous vision-based following using ROS2, OpenCV, and ArUco markers. The software is organized as a reusable ROS2 package with launch files and configuration files, enabling future expansion into LiDAR-based navigation, obstacle avoidance, and Vicon-assisted localization.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Lab Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
